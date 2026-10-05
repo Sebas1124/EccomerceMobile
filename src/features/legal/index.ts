@@ -1,0 +1,5 @@
+export { legalApi } from './api/legal-api'
+export type { LegalDocument, LegalSummary } from './api/legal-api'
+export { LegalDocumentScreen } from './screens/LegalDocumentScreen'
+export { LegalIndexScreen } from './screens/LegalIndexScreen'
+export { legalTexts } from './texts'

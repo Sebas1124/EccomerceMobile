@@ -1,0 +1,5 @@
+export { ticketsApi } from './api/tickets-api'
+export type { Ticket, TicketMessage, TicketPriority, TicketStatus } from './api/tickets-api'
+export { TicketDetailScreen } from './screens/TicketDetailScreen'
+export { TicketsScreen } from './screens/TicketsScreen'
+export { ticketsTexts } from './texts'
