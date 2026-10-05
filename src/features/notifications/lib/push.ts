@@ -1,21 +1,35 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants'
-import * as Notifications from 'expo-notifications'
 import { Platform } from 'react-native'
 import type { PushPlatform } from '../api/notifications-api'
 
+type NotificationsModule = typeof import('expo-notifications')
+
+let notificationsModule: Promise<NotificationsModule> | null = null
+
 /**
- * Qué hace la app con un aviso que llega con ella abierta: se enseña, pero sin
- * sonido ni globo en el icono, que ya está el usuario mirando la pantalla.
+ * Carga `expo-notifications` solo cuando hace falta. El módulo lanza un error
+ * nada más importarse en Expo Go para Android (SDK 53+), así que no puede estar
+ * en un `import` estático: tiraría abajo toda la app al arrancar.
+ *
+ * Al cargarlo por primera vez fija qué hace la app con un aviso que llega con
+ * ella abierta: se enseña, pero sin sonido ni globo en el icono, que ya está el
+ * usuario mirando la pantalla.
  */
-Notifications.setNotificationHandler({
-  handleNotification: () =>
-    Promise.resolve({
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: false,
-      shouldSetBadge: false,
-    }),
-})
+export function loadNotifications(): Promise<NotificationsModule> {
+  notificationsModule ??= import('expo-notifications').then((module) => {
+    module.setNotificationHandler({
+      handleNotification: () =>
+        Promise.resolve({
+          shouldShowBanner: true,
+          shouldShowList: true,
+          shouldPlaySound: false,
+          shouldSetBadge: false,
+        }),
+    })
+    return module
+  })
+  return notificationsModule
+}
 
 /** Canal de Android. Sin él, Android 13+ ni siquiera pide permiso. */
 const ANDROID_CHANNEL = 'default'
@@ -57,6 +71,8 @@ export type PushPermission = 'granted' | 'denied'
  * iOS solo muestra el diálogo la primera vez y después hay que ir a Ajustes.
  */
 export async function ensurePermission(): Promise<PushPermission> {
+  const Notifications = await loadNotifications()
+
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL, {
       name: 'Avisos',
@@ -77,6 +93,7 @@ export async function obtainToken(): Promise<string | null> {
   if ((await ensurePermission()) !== 'granted') return null
 
   // `pushBlocker` ya ha garantizado que hay id de proyecto.
+  const Notifications = await loadNotifications()
   const { data } = await Notifications.getExpoPushTokenAsync({ projectId: projectId() as string })
   return data
 }
