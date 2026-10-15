@@ -41,6 +41,27 @@ export interface CartSummary {
   discountCents: number
   taxes: { rate: number; baseCents: number; taxCents: number }[]
   hasIssues: boolean
+  /**
+   * Si el carrito llega a los mínimos de pedido. `null` con carrito de
+   * invitado o cuando la tienda no tiene ninguno.
+   */
+  minimums: CartMinimums | null
+}
+
+/** Lo que falta para poder pasar por caja. */
+export interface CartMinimums {
+  met: boolean
+  orderMinCents: number
+  orderShortfallCents: number
+  /** `true` si el mínimo de la tienda no se le aplica (ventaja de socio). */
+  orderExempt: boolean
+  categories: {
+    categoryId: string
+    name: string
+    minCents: number
+    subtotalCents: number
+    shortfallCents: number
+  }[]
 }
 
 /** Línea del carrito de invitado: se guarda en el dispositivo con lo justo para pintarla. */

@@ -1,4 +1,5 @@
-export { invoicesApi } from './api/invoices-api'
-export type { Invoice } from './api/invoices-api'
+export { creditNotesApi, invoicesApi } from './api/invoices-api'
+export type { CreditNote, Invoice } from './api/invoices-api'
+export { CreditNotesCard } from './components/CreditNotesCard'
 export { InvoiceCard } from './components/InvoiceCard'
 export { invoicesTexts } from './texts'

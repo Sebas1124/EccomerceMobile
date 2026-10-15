@@ -1,7 +1,15 @@
 import { router } from 'expo-router'
-import { Clock, ShieldCheck, Tag, X } from 'lucide-react-native'
+import { Clock, Gift, ShieldCheck, Sparkles, Tag, X } from 'lucide-react-native'
 import { useEffect, useRef, useState } from 'react'
 import { StyleSheet, TextInput, View } from 'react-native'
+import {
+  CityField,
+  CountryField,
+  StreetField,
+  addressApi,
+  addressTexts as a,
+  type ShippingZones,
+} from '@/features/address-lookup'
 import { FeatureKey, useFeature } from '@/features/app-config'
 import { useCartStore } from '@/features/cart'
 import { ordersApi } from '@/features/orders'
@@ -10,11 +18,11 @@ import { AppText } from '@/shared/components/AppText'
 import { Button } from '@/shared/components/Button'
 import { Card } from '@/shared/components/Card'
 import { Screen } from '@/shared/components/Screen'
-import { AppForm, yup, type FieldConfig } from '@/shared/forms'
+import { AppForm, renderField, yup, type FieldConfig } from '@/shared/forms'
 import { confirm, notify } from '@/shared/feedback'
 import { formatCountdown, formatPrice } from '@/shared/lib/format'
 import { radius, spacing } from '@/shared/theme/tokens'
-import { checkoutApi } from '../api/checkout-api'
+import { checkoutApi, promoCodesApi, type MyPromoCode } from '../api/checkout-api'
 import { checkoutTexts as t } from '../texts'
 import type { AddressValues, CheckoutSession } from '../types'
 
@@ -24,19 +32,68 @@ const schema: yup.ObjectSchema<AddressValues> = yup.object({
   postalCode: yup.string().trim().min(3).max(12).required(),
   city: yup.string().trim().min(2).max(80).required(),
   province: yup.string().trim().max(80).defined(),
+  country: yup.string().trim().length(2).required(),
   phone: yup.string().trim().max(30).defined(),
   notes: yup.string().trim().max(300).defined(),
 })
 
-const fields: FieldConfig<AddressValues>[] = [
+/**
+ * Los campos que no necesitan callejero.
+ *
+ * Pais, ciudad y calle se pintan a mano entre estos dos grupos: cada uno
+ * depende del anterior (el pais decide que ciudades valen, y la ciudad acota
+ * las calles), y eso no cabe en una lista declarativa.
+ */
+const nameFields: FieldConfig<AddressValues>[] = [
   { kind: 'text', name: 'fullName', label: t.fieldFullName, autoComplete: 'name' },
-  { kind: 'text', name: 'street', label: t.fieldStreet, autoComplete: 'street-address' },
+]
+
+const restFields: FieldConfig<AddressValues>[] = [
   { kind: 'text', name: 'postalCode', label: t.fieldPostalCode, keyboardType: 'number-pad' },
-  { kind: 'text', name: 'city', label: t.fieldCity },
   { kind: 'text', name: 'province', label: t.fieldProvince },
   { kind: 'text', name: 'phone', label: t.fieldPhone, keyboardType: 'phone-pad' },
   { kind: 'text', name: 'notes', label: t.fieldNotes },
 ]
+
+/**
+ * Rellena la provincia a partir del codigo postal.
+ *
+ * Es un componente y no una funcion suelta porque necesita un efecto, y dentro
+ * del render del formulario los hooks no tienen donde vivir.
+ *
+ * El codigo postal manda sobre la provincia: es el dato que no se discute, y
+ * dejarlo a mano es la forma mas habitual de que una direccion salga mal.
+ */
+function ProvinceFiller({
+  postalCode,
+  country,
+  onProvince,
+}: {
+  postalCode: string
+  country: string
+  onProvince: (province: string) => void
+}) {
+  useEffect(() => {
+    if (country !== 'ES' || !/^\d{5}$/.test(postalCode.trim())) return
+
+    let alive = true
+    addressApi
+      .postalCode(postalCode.trim())
+      .then(({ province }) => {
+        if (alive && province) onProvince(province.name)
+      })
+      // Sin respuesta, la provincia se escribe a mano.
+      .catch(() => undefined)
+    return () => {
+      alive = false
+    }
+    // `onProvince` cambia en cada render del formulario; depender de el
+    // dispararia la consulta sin parar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postalCode, country])
+
+  return null
+}
 
 /** Campo de cupón: aplicar y quitar los resuelve el servidor. */
 function PromoCodeField({
@@ -49,9 +106,28 @@ function PromoCodeField({
   const colors = useColors()
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
+  const [mine, setMine] = useState<MyPromoCode[]>([])
 
-  const apply = async () => {
-    const value = code.trim()
+  /**
+   * Los cupones que ya tiene esta persona. Un cupón regalado que hay que
+   * recordar y teclear se queda sin usar; aquí se aplica de un toque.
+   */
+  useEffect(() => {
+    let alive = true
+    promoCodesApi
+      .mine()
+      .then(({ items }) => {
+        if (alive) setMine(items)
+      })
+      // Sin cupones propios no hay nada que enseñar: el campo funciona igual.
+      .catch(() => undefined)
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  const apply = async (from?: string) => {
+    const value = (from ?? code).trim()
     if (!value) return
     setBusy(true)
     try {
@@ -121,6 +197,30 @@ function PromoCodeField({
           onPress={() => void apply()}
         />
       </View>
+
+      {mine.length > 0 && (
+        <View style={{ gap: spacing.xs }}>
+          <AppText variant="muted" style={{ fontSize: 12 }}>
+            {t.promoMine}
+          </AppText>
+          <View style={styles.promoChips}>
+            {mine.map((coupon) => (
+              <Button
+                key={coupon.id}
+                label={`${coupon.code}  ${
+                  coupon.kind === 'PERCENT' ? `-${coupon.value} %` : `-${(coupon.value / 100).toFixed(2)} €`
+                }`}
+                icon={coupon.audience === 'NEW_CUSTOMERS' ? Sparkles : Gift}
+                variant="outline"
+                fullWidth={false}
+                disabled={busy}
+                haptic="success"
+                onPress={() => void apply(coupon.code)}
+              />
+            ))}
+          </View>
+        </View>
+      )}
     </View>
   )
 }
@@ -130,9 +230,25 @@ export function CheckoutScreen() {
   const promoCodesOn = useFeature(FeatureKey.PromoCodes)
   const load = useCartStore((state) => state.load)
   const [session, setSession] = useState<CheckoutSession | null>(null)
+  const [zones, setZones] = useState<ShippingZones | null>(null)
   const [seconds, setSeconds] = useState(0)
   const [placing, setPlacing] = useState(false)
   const started = useRef(false)
+
+  useEffect(() => {
+    let alive = true
+    addressApi
+      .zones()
+      .then(({ zones: loaded }) => {
+        if (alive) setZones(loaded)
+      })
+      // Sin la configuración el formulario va sin restricciones; el servidor
+      // valida igual al guardar.
+      .catch(() => undefined)
+    return () => {
+      alive = false
+    }
+  }, [])
 
   useEffect(() => {
     // Abrir el checkout reserva stock: una sola vez por pantalla.
@@ -165,7 +281,9 @@ export function CheckoutScreen() {
       city: values.city,
       postalCode: values.postalCode,
       province: values.province || null,
-      country: 'España',
+      // Código ISO, como la libreta de direcciones: comparar nombres de país
+      // no vale para decidir si se entrega.
+      country: values.country || zones?.baseCountry || 'ES',
       phone: values.phone || null,
       notes: values.notes || null,
     })
@@ -213,6 +331,11 @@ export function CheckoutScreen() {
     )
   }
 
+  const base = zones?.baseCountry ?? 'ES'
+  // Sin envíos a otros países el selector no es un selector: solo el base.
+  const countries = zones?.otherCountries ? [base, ...zones.countries.map((one) => one.code)] : [base]
+  const surchargeOf = (code: string) => zones?.countries.find((one) => one.code === code)?.surchargeCents ?? 0
+
   const expired = seconds <= 0 || session.status !== 'PENDING'
 
   if (expired) {
@@ -240,20 +363,81 @@ export function CheckoutScreen() {
           </AppText>
         </View>
         <AppForm<AddressValues>
+          // Con `key` el formulario se rehace cuando llegan las zonas: hasta
+          // entonces no se sabe ni la ciudad ni el pais por defecto.
+          key={zones ? 'zonas' : 'cargando'}
           schema={schema}
           defaultValues={{
             fullName: session.shippingAddress?.fullName ?? '',
             street: session.shippingAddress?.street ?? '',
             postalCode: session.shippingAddress?.postalCode ?? '',
-            city: session.shippingAddress?.city ?? '',
+            city: session.shippingAddress?.city ?? zones?.baseCity ?? '',
             province: session.shippingAddress?.province ?? '',
+            country: session.shippingAddress?.country ?? zones?.baseCountry ?? 'ES',
             phone: session.shippingAddress?.phone ?? '',
             notes: session.shippingAddress?.notes ?? '',
           }}
-          fields={fields}
           submitLabel={t.saveAddress}
           onSubmit={saveAddress}
-        />
+        >
+          {(form) => {
+            const country = form.watch('country') || base
+            const city = form.watch('city') || ''
+            // Mientras la tienda solo reparta en su ciudad, el campo se enseña
+            // bloqueado con el motivo: dejar elegir otra para rechazarla al
+            // pagar es la peor manera de contarlo.
+            const cityLocked = zones ? !zones.otherCities && country === base : false
+            const lockedCity = cityLocked ? (zones?.baseCity ?? city) : city
+
+            return (
+              <>
+                {nameFields.map((field) => renderField(form, field))}
+
+                {/* País antes que ciudad: el país decide qué ciudades valen. */}
+                <CountryField
+                  value={country}
+                  countries={countries}
+                  surchargeOf={surchargeOf}
+                  onChange={(next) => {
+                    if (next === country) return
+                    form.setValue('country', next)
+                    // La ciudad anterior es de otro país: dejarla puesta engaña.
+                    form.setValue('city', '')
+                  }}
+                />
+
+                <CityField
+                  control={form.control}
+                  name="city"
+                  label={t.fieldCity}
+                  country={country}
+                  locked={cityLocked}
+                  lockedReason={zones ? a.city.onlyBase(zones.baseCity) : undefined}
+                  onProvince={(province) => form.setValue('province', province)}
+                />
+
+                <StreetField
+                  control={form.control}
+                  name="street"
+                  label={t.fieldStreet}
+                  city={lockedCity}
+                  country={country}
+                  onPick={(hit) => {
+                    if (hit.postalCode) form.setValue('postalCode', hit.postalCode)
+                    if (hit.province) form.setValue('province', hit.province)
+                  }}
+                />
+
+                {restFields.map((field) => renderField(form, field))}
+                <ProvinceFiller
+                  postalCode={form.watch('postalCode') || ''}
+                  country={country}
+                  onProvince={(province) => form.setValue('province', province)}
+                />
+              </>
+            )
+          }}
+        </AppForm>
       </Card>
 
       <Card title={t.summary}>
@@ -285,16 +469,12 @@ export function CheckoutScreen() {
         {session.discountCents > 0 && (
           <View style={styles.row}>
             <AppText style={{ color: colors.primary }}>{t.discounts}</AppText>
-            <AppText style={{ color: colors.primary }}>
-              -{formatPrice(session.discountCents)}
-            </AppText>
+            <AppText style={{ color: colors.primary }}>-{formatPrice(session.discountCents)}</AppText>
           </View>
         )}
         <View style={styles.row}>
           <AppText variant="muted">{t.shipping}</AppText>
-          <AppText>
-            {session.shippingCents > 0 ? formatPrice(session.shippingCents) : t.shippingFree}
-          </AppText>
+          <AppText>{session.shippingCents > 0 ? formatPrice(session.shippingCents) : t.shippingFree}</AppText>
         </View>
         {session.taxes.map((tax) => (
           <View key={tax.rate} style={styles.row}>
@@ -303,7 +483,9 @@ export function CheckoutScreen() {
           </View>
         ))}
 
-        <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md }]}>
+        <View
+          style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md }]}
+        >
           <AppText variant="subtitle">{t.total}</AppText>
           <AppText variant="subtitle">{formatPrice(session.totalCents)}</AppText>
         </View>
@@ -339,6 +521,7 @@ const styles = StyleSheet.create({
   },
   reserved: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md },
+  promoChips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   promoRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
   promoInput: { flex: 1, borderWidth: 1, borderRadius: radius.lg, padding: spacing.md, fontSize: 15 },
   promoApplied: {

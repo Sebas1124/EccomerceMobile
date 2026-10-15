@@ -2,13 +2,7 @@ import { Image } from 'expo-image'
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { ChevronLeft } from 'lucide-react-native'
 import { useEffect, useState } from 'react'
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from 'react-native'
+import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
 import Animated, {
   Extrapolation,
   interpolate,
@@ -21,6 +15,7 @@ import { ProductPolicyCard } from '@/features/after-sales'
 import { AddToCartButton } from '@/features/cart'
 import { useColors } from '@/features/theme'
 import { AppText } from '@/shared/components/AppText'
+import { SpecsList } from '@/shared/components/SpecsList'
 import { notify } from '@/shared/feedback'
 import { radius, spacing } from '@/shared/theme/tokens'
 import { catalogApi } from '../api/catalog-api'
@@ -121,12 +116,16 @@ export function ProductScreen() {
     const y = scrollY.get()
     return {
       transform: [
-        { translateY: interpolate(y, [0, heroHeight], [0, heroHeight * 0.4], {
+        {
+          translateY: interpolate(y, [0, heroHeight], [0, heroHeight * 0.4], {
             extrapolateLeft: Extrapolation.CLAMP,
-          }) },
-        { scale: interpolate(y, [-heroHeight, 0], [2, 1], {
+          }),
+        },
+        {
+          scale: interpolate(y, [-heroHeight, 0], [2, 1], {
             extrapolateRight: Extrapolation.CLAMP,
-          }) },
+          }),
+        },
       ],
     }
   })
@@ -234,24 +233,15 @@ export function ProductScreen() {
             }}
           />
 
-          {!soldOut && (
-            <QuantityStepper value={safeQty} max={maxQty} onChange={setQty} />
-          )}
+          {!soldOut && <QuantityStepper value={safeQty} max={maxQty} onChange={setQty} />}
 
           {variant && (
             <View style={styles.stock}>
               <View
-                style={[
-                  styles.dot,
-                  { backgroundColor: soldOut ? colors.destructive : colors.success },
-                ]}
+                style={[styles.dot, { backgroundColor: soldOut ? colors.destructive : colors.success }]}
               />
               <AppText style={{ fontSize: 14 }}>
-                {soldOut
-                  ? t.soldOut
-                  : variant.available <= 5
-                    ? t.lastUnits(variant.available)
-                    : t.available}
+                {soldOut ? t.soldOut : variant.available <= 5 ? t.lastUnits(variant.available) : t.available}
               </AppText>
               <AppText variant="muted" style={{ fontSize: 12 }}>
                 · {t.sku(variant.sku)}
@@ -267,6 +257,18 @@ export function ProductScreen() {
               {product.description ?? t.noDescription}
             </AppText>
           </View>
+
+          {/* Solo si la tienda la ha rellenado: un apartado vacío da peor
+              impresión que no tenerlo. */}
+          {product.specs.length > 0 ? (
+            <>
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+              <View style={{ gap: spacing.sm }}>
+                <AppText variant="subtitle">{t.specs}</AppText>
+                <SpecsList rows={product.specs} />
+              </View>
+            </>
+          ) : null}
 
           <ProductPolicyCard productId={product.id} />
         </View>

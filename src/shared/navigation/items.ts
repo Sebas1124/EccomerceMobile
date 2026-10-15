@@ -8,6 +8,7 @@ import {
   RotateCcw,
   Scale,
   ShoppingCart,
+  Sparkles,
   UserCog,
 } from 'lucide-react-native'
 import type { LucideIcon } from 'lucide-react-native'
@@ -46,6 +47,13 @@ const account: NavItem[] = [
     label: 'Devoluciones',
     icon: RotateCcw,
     feature: FeatureKey.Returns,
+    private: true,
+  },
+  {
+    href: '/suscripcion',
+    label: 'Suscripción',
+    icon: Sparkles,
+    feature: FeatureKey.Subscriptions,
     private: true,
   },
   {

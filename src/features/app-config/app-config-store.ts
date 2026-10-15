@@ -16,7 +16,10 @@ export const fallbackConfig: PublicConfig = {
     pricesIncludeVat: true,
     defaultVatRate: 0.21,
     supportEmail: null,
+  minOrderCents: 0,
+    timeZone: 'Europe/Madrid',
   },
+  contact: { phone: '', whatsapp: '', location: '', hours: [], social: [] },
   features: { [FeatureKey.Inventory]: true, [FeatureKey.LandingBuilder]: true, [FeatureKey.TwoFactor]: true },
 }
 

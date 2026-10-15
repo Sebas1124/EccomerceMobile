@@ -22,14 +22,14 @@ export const catalogTexts = {
   fromPrice: 'Desde',
   soldOut: 'Agotado',
   available: 'Disponible',
-  lastUnits: (units: number) =>
-    units === 1 ? '¡Última unidad!' : `¡Solo quedan ${units}!`,
+  lastUnits: (units: number) => (units === 1 ? '¡Última unidad!' : `¡Solo quedan ${units}!`),
 
   // Ficha
   detailError: 'No se pudo cargar el producto',
   chooseVariant: 'Elige una opción',
   sku: (value: string) => `SKU ${value}`,
   vatIncluded: 'IVA incluido',
+  specs: 'Ficha técnica',
   description: 'Descripción',
   noDescription: 'Este producto todavía no tiene descripción.',
   quantity: 'Unidades',

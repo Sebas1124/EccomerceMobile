@@ -15,6 +15,8 @@ const emptyCart: CartSummary = {
   discountCents: 0,
   taxes: [],
   hasIssues: false,
+  // El carrito local no conoce los mínimos: los pone el servidor.
+  minimums: null,
 }
 
 /** El carrito de invitado vive en el dispositivo hasta que se inicia sesión. */
@@ -93,6 +95,7 @@ function summarizeGuest(lines: GuestLine[]): CartSummary {
     discountCents: 0,
     taxes: [...taxes.entries()].map(([rate, entry]) => ({ rate, ...entry })).sort((a, b) => b.rate - a.rate),
     hasIssues: false,
+    minimums: null,
   }
 }
 

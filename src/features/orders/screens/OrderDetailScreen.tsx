@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { ReturnableItemsCard } from '@/features/after-sales'
 import { FeatureKey, useFeature } from '@/features/app-config'
-import { InvoiceCard } from '@/features/invoices'
+import { CreditNotesCard, InvoiceCard } from '@/features/invoices'
+import { PayPendingCard } from '@/features/payments'
 import { ReceiptCard } from '@/features/receipts'
 import { useColors } from '@/features/theme'
 import { AppText } from '@/shared/components/AppText'
@@ -75,14 +76,26 @@ export function OrderDetailScreen() {
         </View>
 
         {order.status === 'PENDING_PAYMENT' && (
-          <View style={[styles.notice, { borderColor: colors.border, backgroundColor: colors.card }]}>
-            <AppText variant="muted">{t.paymentPending}</AppText>
-          </View>
+          <>
+            <View
+              style={[styles.notice, { borderColor: colors.border, backgroundColor: colors.card }]}
+            >
+              <AppText variant="muted">{t.paymentPending}</AppText>
+            </View>
+            {/* Un pedido pendiente tiene que poder pagarse desde aquí: el pago
+                se queda a medias por motivos de lo más normales. */}
+            <PayPendingCard
+              orderNumber={order.number}
+              amountCents={order.totalCents}
+              onReturn={() => setVersion((value) => value + 1)}
+            />
+          </>
         )}
 
         <ReceiptCard orderNumber={order.number} />
 
         <InvoiceCard orderNumber={order.number} />
+        <CreditNotesCard orderNumber={order.number} />
 
         <Card title={t.product}>
           {order.items.map((item) => (

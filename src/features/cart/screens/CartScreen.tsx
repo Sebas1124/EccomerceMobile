@@ -1,6 +1,6 @@
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
-import { AlertTriangle, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react-native'
+import { AlertTriangle, Info, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react-native'
 import { useEffect } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { FeatureKey, useFeature } from '@/features/app-config'
@@ -127,9 +127,7 @@ export function CartScreen() {
 
   useEffect(() => {
     if (status === 'idle' || status === 'loading') return
-    load(status === 'authenticated').catch((error: unknown) =>
-      notify.fromError(error, t.loadError),
-    )
+    load(status === 'authenticated').catch((error: unknown) => notify.fromError(error, t.loadError))
   }, [status, load])
 
   const askClear = () =>
@@ -193,9 +191,7 @@ export function CartScreen() {
         {cart.discountCents > 0 && (
           <View style={styles.totalRow}>
             <AppText style={{ color: colors.primary }}>{t.discounts}</AppText>
-            <AppText style={{ color: colors.primary }}>
-              -{formatPrice(cart.discountCents)}
-            </AppText>
+            <AppText style={{ color: colors.primary }}>-{formatPrice(cart.discountCents)}</AppText>
           </View>
         )}
         {shippingOn && (
@@ -205,13 +201,44 @@ export function CartScreen() {
           </View>
         )}
 
-        <View style={[styles.totalRow, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md }]}>
+        <View
+          style={[
+            styles.totalRow,
+            { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md },
+          ]}
+        >
           <AppText variant="subtitle">{t.total}</AppText>
           <AppText variant="subtitle">{formatPrice(cart.totalCents)}</AppText>
         </View>
         <AppText variant="muted" style={{ fontSize: 12 }}>
           {t.taxIncluded}
         </AppText>
+
+        {/* Lo que falta para el mínimo, junto al total: es donde se decide
+            si se sigue comprando o se pasa por caja. */}
+        {cart.minimums && !cart.minimums.met && (
+          <View style={[styles.minimum, { borderColor: colors.warning }]}>
+            <Info color={colors.warning} size={16} />
+            <View style={{ flex: 1, gap: spacing.xs }}>
+              <AppText style={{ fontWeight: '500' }}>{t.minimumTitle}</AppText>
+              {cart.minimums.orderShortfallCents > 0 && (
+                <AppText variant="muted" style={{ fontSize: 13 }}>
+                  {t.minimumOrder(
+                    formatPrice(cart.minimums.orderShortfallCents),
+                    formatPrice(cart.minimums.orderMinCents),
+                  )}
+                </AppText>
+              )}
+              {cart.minimums.categories
+                .filter((one) => one.shortfallCents > 0)
+                .map((one) => (
+                  <AppText key={one.categoryId} variant="muted" style={{ fontSize: 13 }}>
+                    {t.minimumCategory(one.name, formatPrice(one.shortfallCents), formatPrice(one.minCents))}
+                  </AppText>
+                ))}
+            </View>
+          </View>
+        )}
 
         {guest ? (
           <>
@@ -221,27 +248,38 @@ export function CartScreen() {
         ) : (
           <Button
             label={t.checkout}
-            disabled={cart.hasIssues || busy}
+            disabled={cart.hasIssues || busy || cart.minimums?.met === false}
             onPress={() => router.push('/checkout')}
           />
         )}
-        <Button
-          label={t.continueShopping}
-          variant="ghost"
-          onPress={() => router.push('/catalog')}
-        />
+        <Button label={t.continueShopping} variant="ghost" onPress={() => router.push('/catalog')} />
       </Card>
     </Screen>
   )
 }
 
 const styles = StyleSheet.create({
+  minimum: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+  },
   line: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },
   thumb: { width: 64, height: 64, borderRadius: radius.lg },
   lineBody: { flex: 1, gap: spacing.xs },
   issue: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   controls: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.xs },
-  step: { width: 32, height: 32, borderWidth: 1, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  step: {
+    width: 32,
+    height: 32,
+    borderWidth: 1,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   empty: { alignItems: 'center', gap: spacing.lg },
 })

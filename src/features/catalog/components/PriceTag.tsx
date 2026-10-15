@@ -15,6 +15,7 @@ export function PriceTag({
   promotion,
   compareAtCents,
   prefix,
+  toPriceCents,
   size = 'md',
 }: {
   priceCents: number
@@ -23,11 +24,20 @@ export function PriceTag({
   promotion?: AppliedPromotion | null
   /** Precio anterior del propio producto, al margen de las promociones. */
   compareAtCents?: number | null
+  /** Se ignora si hay rango. */
   prefix?: string
+  /**
+   * Extremo caro cuando el producto tiene variantes de precios distintos.
+   *
+   * Un producto de 20 € a 100 € anunciado "desde 20 €" promete un precio que
+   * casi nadie va a pagar. Con rango se ve lo que hay.
+   */
+  toPriceCents?: number
   size?: 'sm' | 'md' | 'lg'
 }) {
   const colors = useColors()
   const final = finalPriceCents ?? priceCents
+  const range = toPriceCents !== undefined && toPriceCents > final
   const discounted = final < priceCents
   const struck = discounted ? priceCents : (compareAtCents ?? null)
   const showStruck = struck !== null && struck > final
@@ -47,11 +57,14 @@ export function PriceTag({
           color: discounted ? colors.primary : colors.foreground,
         }}
       >
-        {prefix ? `${prefix} ` : ''}
+        {range ? '' : prefix ? `${prefix} ` : ''}
         {formatPrice(final)}
+        {range ? ` – ${formatPrice(toPriceCents)}` : ''}
       </AppText>
 
-      {showStruck && (
+      {/* Con rango no se tacha nada: el precio anterior de una variante no
+          dice nada del abanico entero. */}
+      {!range && showStruck && (
         <AppText
           variant="muted"
           numberOfLines={1}

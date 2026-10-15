@@ -1,7 +1,16 @@
 import { router, usePathname } from 'expo-router'
+import { DrawerContact } from './DrawerContact'
 import { X } from 'lucide-react-native'
 import { useEffect } from 'react'
-import { BackHandler, Platform, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
+import {
+  BackHandler,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native'
 import Animated, {
   Easing,
   interpolate,
@@ -32,15 +41,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-function DrawerRow({
-  item,
-  active,
-  onPress,
-}: {
-  item: NavItem
-  active: boolean
-  onPress: () => void
-}) {
+function DrawerRow({ item, active, onPress }: { item: NavItem; active: boolean; onPress: () => void }) {
   const colors = useColors()
   const Icon = item.icon
 
@@ -131,8 +132,7 @@ export function AppDrawer() {
     .map((group) => ({
       ...group,
       items: group.items.filter(
-        (item) =>
-          (!item.private || authed) && (!item.feature || features[item.feature] === true),
+        (item) => (!item.private || authed) && (!item.feature || features[item.feature] === true),
       ),
     }))
     .filter((group) => group.items.length > 0)
@@ -194,6 +194,8 @@ export function AppDrawer() {
               ))}
             </View>
           ))}
+
+          <DrawerContact />
         </ScrollView>
       </Animated.View>
     </>

@@ -37,15 +37,7 @@ function useDebounced(value: string, delay = 400) {
 }
 
 /** Chip de filtro: categoría u orden. */
-function Chip({
-  label,
-  active,
-  onPress,
-}: {
-  label: string
-  active: boolean
-  onPress: () => void
-}) {
+function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   const colors = useColors()
   return (
     <Pressable
@@ -82,9 +74,7 @@ export function CatalogScreen() {
    * porque el reparto dependía de cómo envolviera la fila cada plataforma, y
    * en iOS la segunda tarjeta se quedaba fuera de la pantalla.
    */
-  const cellWidth = Math.floor(
-    (width - spacing.lg * 2 - spacing.md * (COLUMNS - 1)) / COLUMNS,
-  )
+  const cellWidth = Math.floor((width - spacing.lg * 2 - spacing.md * (COLUMNS - 1)) / COLUMNS)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounced(search)
   const [category, setCategory] = useState<string | null>(null)
@@ -224,11 +214,7 @@ export function CatalogScreen() {
               keyExtractor={(item) => item}
               contentContainerStyle={styles.chips}
               renderItem={({ item }) => (
-                <Chip
-                  label={t.sortOptions[item]}
-                  active={item === sort}
-                  onPress={() => setSort(item)}
-                />
+                <Chip label={t.sortOptions[item]} active={item === sort} onPress={() => setSort(item)} />
               )}
             />
 
@@ -277,6 +263,11 @@ const styles = StyleSheet.create({
   },
   searchInput: { flex: 1, paddingVertical: spacing.md, fontSize: 15 },
   chips: { gap: spacing.sm, paddingHorizontal: spacing.lg },
-  chip: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderWidth: 1, borderRadius: radius.full },
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderWidth: 1,
+    borderRadius: radius.full,
+  },
   empty: { padding: spacing.xxl, gap: spacing.lg, alignItems: 'center' },
 })

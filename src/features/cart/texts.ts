@@ -1,5 +1,11 @@
 /** Textos del carrito en el móvil. */
 export const cartTexts = {
+  /** Mínimos de pedido: se dice cuánto falta, no cuál es el mínimo. */
+  minimumTitle: 'Aún no llegas al mínimo',
+  minimumOrder: (missing: string, minimum: string) =>
+    `Te faltan ${missing} para el pedido mínimo de ${minimum}.`,
+  minimumCategory: (name: string, missing: string, minimum: string) =>
+    `En ${name} te faltan ${missing} para su mínimo de ${minimum}.`,
   title: 'Carrito',
   empty: 'Tu carrito está vacío.',
   emptyAction: 'Ver el catálogo',

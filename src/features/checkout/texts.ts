@@ -14,6 +14,7 @@ export const checkoutTexts = {
   fieldFullName: 'Nombre y apellidos',
   fieldStreet: 'Dirección',
   fieldPostalCode: 'Código postal',
+  onlyBaseCity: (city: string) => `Por ahora solo repartimos en ${city}.`,
   fieldCity: 'Ciudad',
   fieldProvince: 'Provincia',
   fieldPhone: 'Teléfono',
@@ -31,6 +32,7 @@ export const checkoutTexts = {
   total: 'Total',
   taxIncluded: 'Impuestos incluidos',
 
+  promoMine: 'Tus cupones',
   promoLabel: '¿Tienes un cupón?',
   promoPlaceholder: 'Escribe tu código',
   promoApply: 'Aplicar',

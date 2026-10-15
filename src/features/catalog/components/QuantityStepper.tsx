@@ -74,12 +74,7 @@ export function QuantityStepper({
           onPress={() => onChange(value - 1)}
         />
         <AppText style={styles.value}>{value}</AppText>
-        <StepButton
-          icon={Plus}
-          label={t.increase}
-          disabled={atMax}
-          onPress={() => onChange(value + 1)}
-        />
+        <StepButton icon={Plus} label={t.increase} disabled={atMax} onPress={() => onChange(value + 1)} />
       </View>
     </View>
   )

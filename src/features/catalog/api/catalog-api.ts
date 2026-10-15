@@ -1,10 +1,5 @@
 import { api } from '@/shared/lib/api-client'
-import type {
-  CatalogProduct,
-  CatalogProductDetail,
-  CatalogSort,
-  CategoryNode,
-} from '../types'
+import type { CatalogProduct, CatalogProductDetail, CatalogSort, CategoryNode } from '../types'
 
 export interface CatalogQuery {
   category?: string
@@ -40,8 +35,7 @@ export const catalogApi = {
     )
   },
 
-  detail: (slug: string) =>
-    api.get<{ product: CatalogProductDetail }>(`/products/${slug}`, { auth: false }),
+  detail: (slug: string) => api.get<{ product: CatalogProductDetail }>(`/products/${slug}`, { auth: false }),
 
   categories: () => api.get<{ items: CategoryNode[] }>('/categories', { auth: false }),
 }

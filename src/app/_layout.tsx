@@ -53,6 +53,8 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* Con el título por defecto saldría "Suscripcion", sin tilde. */}
+        <Stack.Screen name="suscripcion" options={{ title: 'Suscripción' }} />
         <Stack.Screen name="login" options={{ title: '' }} />
         <Stack.Screen name="register" options={{ title: '' }} />
         <Stack.Screen name="verify-email" options={{ title: '' }} />

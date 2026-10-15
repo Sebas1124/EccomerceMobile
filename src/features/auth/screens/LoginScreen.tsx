@@ -67,7 +67,9 @@ export function LoginScreen() {
         onDone={(user) => {
           notify.success(t.login.welcome(user.firstName))
           void absorbGuestCart()
-          router.replace('/account')
+          // A la portada: en una tienda se inicia sesión para comprar, no para
+          // mirarse los datos de la cuenta.
+          router.replace('/')
         }}
         onCancel={() => setChallengeId(null)}
       />
@@ -102,7 +104,7 @@ export function LoginScreen() {
             }
             notify.success(t.login.welcome(result.user.firstName))
             void absorbGuestCart()
-            router.replace('/account')
+            router.replace('/')
           } catch (error) {
             if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED') {
               router.push({ pathname: '/verify-email', params: { email: values.email } })

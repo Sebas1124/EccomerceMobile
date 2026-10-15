@@ -57,6 +57,8 @@ export interface AddressValues {
   city: string
   postalCode: string
   province: string
+  /** ISO 3166-1 alfa-2. Lo elige quien compra si la tienda envía fuera. */
+  country: string
   phone: string
   notes: string
 }

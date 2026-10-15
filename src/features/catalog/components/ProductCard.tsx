@@ -78,9 +78,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
 
         {!product.available && (
           <View style={[styles.soldOut, { backgroundColor: colors.overlay }]}>
-            <AppText style={{ fontSize: 13, fontWeight: '600', color: '#ffffff' }}>
-              {t.soldOut}
-            </AppText>
+            <AppText style={{ fontSize: 13, fontWeight: '600', color: '#ffffff' }}>{t.soldOut}</AppText>
           </View>
         )}
       </View>
@@ -93,11 +91,20 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         <AppText variant="muted" numberOfLines={1} style={styles.brand}>
           {product.brand ?? ' '}
         </AppText>
+        {/* En qué se diferencian las variantes: es lo que convierte un
+            "desde 20 €" en una decisión. */}
+        {product.variantNames.length > 0 && (
+          <AppText variant="muted" numberOfLines={1} style={{ fontSize: 11 }}>
+            {product.variantNames.join(', ')}
+            {product.variantCount > product.variantNames.length ? '…' : ''}
+          </AppText>
+        )}
         <PriceTag
           size="sm"
           prefix={t.fromPrice}
           priceCents={product.priceFromCents}
           finalPriceCents={product.finalPriceFromCents}
+          toPriceCents={product.finalPriceToCents}
           compareAtCents={product.compareAtCents}
         />
       </View>

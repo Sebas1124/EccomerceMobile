@@ -30,7 +30,8 @@
         "expo-notifications",
         {}
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-web-browser"
     ],
     "scheme": "ecommerce",
     "experiments": {
