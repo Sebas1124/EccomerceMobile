@@ -11,6 +11,7 @@ import {
   type ShippingZones,
 } from '@/features/address-lookup'
 import { FeatureKey, useFeature } from '@/features/app-config'
+import { accountApi } from '@/features/account'
 import { useCartStore } from '@/features/cart'
 import { ordersApi } from '@/features/orders'
 import { useColors } from '@/features/theme'
@@ -289,6 +290,26 @@ export function CheckoutScreen() {
     })
     setSession(updated)
     notify.success(t.addressSaved)
+
+    // Y a la libreta, que es lo que espera quien la escribe: si no, la
+    // siguiente compra vuelve a pedirla entera. Si falla, el pedido sigue:
+    // la dirección ya está en el checkout.
+    await accountApi
+      .createAddress({
+        kind: 'SHIPPING',
+        label: null,
+        fullName: values.fullName,
+        street: values.street,
+        street2: null,
+        city: values.city,
+        province: values.province || null,
+        postalCode: values.postalCode,
+        country: values.country || zones?.baseCountry || 'ES',
+        phone: values.phone || null,
+        notes: values.notes || null,
+        isDefault: false,
+      })
+      .catch(() => undefined)
   }
 
   const placeOrder = async () => {

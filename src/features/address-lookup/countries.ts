@@ -1,0 +1,37 @@
+/** Nombres en español de los países a los que puede vender la tienda. */
+const COUNTRY_NAMES: Record<string, string> = {
+  ES: 'España',
+  DE: 'Alemania',
+  AT: 'Austria',
+  BE: 'Bélgica',
+  BG: 'Bulgaria',
+  CY: 'Chipre',
+  HR: 'Croacia',
+  DK: 'Dinamarca',
+  SK: 'Eslovaquia',
+  SI: 'Eslovenia',
+  EE: 'Estonia',
+  FI: 'Finlandia',
+  FR: 'Francia',
+  GR: 'Grecia',
+  HU: 'Hungría',
+  IE: 'Irlanda',
+  IS: 'Islandia',
+  IT: 'Italia',
+  LV: 'Letonia',
+  LI: 'Liechtenstein',
+  LT: 'Lituania',
+  LU: 'Luxemburgo',
+  MT: 'Malta',
+  NO: 'Noruega',
+  NL: 'Países Bajos',
+  PL: 'Polonia',
+  PT: 'Portugal',
+  CZ: 'Chequia',
+  RO: 'Rumanía',
+  SE: 'Suecia',
+  CH: 'Suiza',
+}
+
+/** El código si no conocemos el nombre: mejor "XX" que un hueco en blanco. */
+export const countryName = (code: string) => COUNTRY_NAMES[code] ?? code
