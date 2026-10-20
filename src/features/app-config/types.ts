@@ -9,6 +9,7 @@ export const FeatureKey = {
   Promotions: 'commerce.promotions',
   PromoCodes: 'commerce.promo-codes',
   Subscriptions: 'commerce.subscriptions',
+  Loyalty: 'commerce.loyalty',
   Payments: 'payments',
   PaymentStripe: 'payments.stripe',
   PaymentPaypal: 'payments.paypal',
