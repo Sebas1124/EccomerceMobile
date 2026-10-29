@@ -32,7 +32,7 @@ export const afterSalesTexts = {
   deadline: (date: string) => `Puedes devolverlo hasta el ${date}`,
   outOfWindow: 'Fuera de plazo',
   alreadyReturned: 'Ya solicitado',
-  notDelivered: 'Podrás devolverlo cuando lo recibas',
+  notPaidYet: 'Podrás devolverlo en cuanto el pedido esté pagado',
 
   requestTitle: (name: string) => `Devolver "${name}"`,
   requestHint: 'Cuéntanos qué ha pasado y te diremos cómo enviarlo.',

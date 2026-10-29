@@ -33,10 +33,16 @@ const schemaFor = (max: number): yup.ObjectSchema<RequestValues> =>
     reason: yup.string().trim().min(3).max(500).required(),
   })
 
+/**
+ * Estados en los que el pedido admite devolución. Espejo del servidor, que es
+ * quien decide: aquí solo se elige qué frase enseñar.
+ */
+const RETURNABLE_STATUSES = ['PAID', 'PREPARING', 'READY_FOR_PICKUP', 'SHIPPED', 'DELIVERED']
+
 /** Por qué no se puede devolver esta línea, en palabras del cliente. */
 function reasonNotReturnable(item: ReturnableItem, orderStatus: string) {
   if (item.returnableQty === 0) return t.alreadyReturned
-  if (orderStatus !== 'SHIPPED' && orderStatus !== 'DELIVERED') return t.notDelivered
+  if (!RETURNABLE_STATUSES.includes(orderStatus)) return t.notPaidYet
   return t.outOfWindow
 }
 
