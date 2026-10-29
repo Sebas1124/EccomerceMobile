@@ -5,6 +5,11 @@ export const paymentsTexts = {
   payNow: (amount: string) => `Pagar ${amount}`,
   opensBrowser: 'Se abre la pantalla de pago segura. Al terminar, vuelves aquí.',
   payError: 'No se pudo abrir el pago',
+  payWith: (label: string) => `Pagar con ${label}`,
+  payWithHint: 'Sin teclear nada. Si tu banco pide confirmación, se abre el navegador.',
+  payOther: 'Pagar de otra forma',
+  paidOk: 'Pago enviado',
+  needsBrowser: 'Tu banco quiere confirmarlo: seguimos en el navegador.',
 
   /** Formas de pago guardadas. */
   saved: {

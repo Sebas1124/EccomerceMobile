@@ -22,6 +22,18 @@ export const paymentsApi = {
   issueLink: (orderNumber: string) =>
     api.post<{ url: string; expiresAt: string }>(`/payments/orders/${orderNumber}/link`, {}),
 
+  /**
+   * Cobra el pedido con un método ya guardado.
+   *
+   * Sin `returnUrl`: la app no tiene a dónde volver en la web, y cobrando con
+   * un método guardado la pasarela suele terminar en la misma llamada.
+   */
+  payWithSaved: (orderNumber: string, providerId: string, savedToken: string) =>
+    api.post<{ status: string; clientAction: { type: string; value?: string; url?: string } | null }>(
+      `/payments/orders/${orderNumber}/pay`,
+      { providerId, savedToken },
+    ),
+
   methods: (providerId = 'stripe') =>
     api
       .get<{ providers: string[]; items: SavedMethod[] }>(
