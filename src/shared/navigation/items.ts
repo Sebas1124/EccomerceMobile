@@ -1,4 +1,5 @@
 import {
+  CreditCard,
   Headset,
   MessagesSquare,
   House,
@@ -42,6 +43,13 @@ const account: NavItem[] = [
   { href: '/perfil', label: 'Mis datos', icon: UserCog, private: true },
   { href: '/pedidos', label: 'Mis pedidos', icon: Package, private: true },
   { href: '/direcciones', label: 'Direcciones', icon: MapPin, private: true },
+  {
+    href: '/metodos-pago',
+    label: 'Métodos de pago',
+    icon: CreditCard,
+    feature: FeatureKey.SavedPaymentMethods,
+    private: true,
+  },
   {
     href: '/devoluciones',
     label: 'Devoluciones',
